@@ -1,0 +1,65 @@
+{
+    // File handling stuff, replaces .editorconfig
+    "files.eol": "\n",
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    "files.encoding": "utf8",
+    "editor.fontLigatures": true,
+    "files.exclude": {
+      "**/__pycache__": true,
+      "**/.pytest_cache": true,
+      "**/.mypy_cache": true,
+      "*.egg-info": true,
+      ".ipynb_checkpoints/": true
+    },
+
+    // Language stuff
+    "[python]": {
+      "editor.insertSpaces": true,
+      "editor.tabSize": 4,
+      "editor.codeActionsOnSave": {
+        "source.organizeImports": true
+      }
+    },
+    "[yaml]": {
+      "editor.insertSpaces": true,
+      "editor.tabSize": 2
+    },
+
+    "[markdown]": {
+        "editor.unicodeHighlight.ambiguousCharacters": false,
+        "editor.unicodeHighlight.invisibleCharacters": false,
+        "editor.wordWrap": "on",
+        "editor.quickSuggestions": {
+            "comments": "off",
+            "strings": "off",
+            "other": "off"
+        },
+        "cSpell.fixSpellingWithRenameProvider": true,
+        "cSpell.advanced.feature.useReferenceProviderWithRename": true,
+        "cSpell.advanced.feature.useReferenceProviderRemove": "/^#+\\s/"
+    },
+
+    // Editor actions for other file types, if avialable
+    "editor.formatOnSave": true,
+
+    // Formatting with black
+    "python.formatting.provider": "black",
+
+    // Import sorting with isort
+    // "isort.path": "${env:PYENV_ROOT}/versions/mine-seg-sat-env/bin/isort",
+    // "python.sortImports.args": ["--settings=${workspaceFolder}/pyproject.toml"],
+
+    // Expecting pyenv to be installed
+    "python.defaultInterpreterPath": "${env:PYENV_ROOT}/versions/mine-seg-sat-env/bin/python",
+    "python.pythonPath": "${env:PYENV_ROOT}/versions/mine-seg-sat-env/bin/python",
+    "python.terminal.activateEnvironment": true,
+
+    // Use flake8 linting
+    "python.linting.enabled": true,
+    "python.linting.flake8Enabled": true,
+    "python.linting.flake8Args": ["--config=${workspaceFolder}/.flake8"],
+    "python.linting.mypyEnabled": true,
+
+    "python.pylanceLspNotebooksEnabled": true
+  }
