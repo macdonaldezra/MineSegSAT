@@ -262,7 +262,7 @@ class MineSATDataset(torch.utils.data.Dataset):
 
         plt.show()
 
-    def parse_title(self, index: int) -> str:
+    def parse_title(self, index: int, show_tile: bool = False) -> str:
         path = self.filepaths[index]
         title = ""
         if "ab_mines" in path:
@@ -270,7 +270,8 @@ class MineSATDataset(torch.utils.data.Dataset):
         elif "bc_mines" in path:
             title += "British Columbia"
 
-        title += " " + path.split("/")[-1]
+        if show_tile:
+            title += " " + path.split("/")[-1]
         if "resource" in self.df.columns:
             title += (
                 " "
@@ -300,7 +301,7 @@ class MineSATDataset(torch.utils.data.Dataset):
         predicted_mask = self.colorize_mask(predicted_mask)
 
         # Create a color image using RGB bands
-        fig, axes = plt.subplots(1, 3, figsize=(6, 3))
+        fig, axes = plt.subplots(1, 3, figsize=(8, 4))
 
         # Display the image
         axes[0].imshow(image)

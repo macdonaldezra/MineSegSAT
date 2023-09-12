@@ -3,9 +3,10 @@ import typing as T
 import torch
 import torch.distributed as dist
 from torch.utils.tensorboard import SummaryWriter
-from torchmetrics import Accuracy, F1Score, MeanMetric, Precision, Recall
+from torchmetrics import F1Score, JaccardIndex, MeanMetric, Precision, Recall
 
 from mine_seg_sat.config import TrainingConfig
+from mine_seg_sat.train_utils.utils import generate_binary_test_metrics
 from mine_seg_sat.utils.path import save_model
 
 
@@ -21,7 +22,7 @@ def binary_segmentation_train(
 ) -> None:
     # Train a binary image segmentation model
     device = torch.device("cuda", rank)
-    accuracy = Accuracy(task="binary").to(device)
+    jaccard = JaccardIndex(task="binary").to(device)
     f1 = F1Score(task="binary").to(device)
     recall = Recall(task="binary").to(device)
     precision = Precision(task="binary").to(device)
@@ -54,25 +55,25 @@ def binary_segmentation_train(
                     prob_mask = outputs.sigmoid().float()
                     labels = labels.unsqueeze(1)
 
-                    accuracy.update(prob_mask, labels)
+                    jaccard.update(prob_mask, labels)
                     f1.update(prob_mask, labels)
                     recall.update(prob_mask, labels)
                     precision.update(prob_mask, labels)
                     epoch_loss.update(loss)
 
             # Each metric needs to be computed in both phases
-            acc = accuracy.compute()
             f1_score = f1.compute()
             prec = precision.compute()
             rec = recall.compute()
             ep_loss = epoch_loss.compute()
+            iou = jaccard.compute()
 
             if rank == 0:
                 print(
-                    f"Epoch {epoch+1} {phase.capitalize()} Accuracy: {acc}, F1: {f1_score}, Precision: {prec}, Recall: {rec}, Loss: {ep_loss.item()}"
+                    f"Epoch {epoch+1} {phase.capitalize()} IoU: {iou}, F1: {f1_score}, Precision: {prec}, Recall: {rec}, Loss: {ep_loss.item()}"
                 )
                 if writer is not None:
-                    writer.add_scalar(f"{phase}/Accuracy", acc, epoch)
+                    writer.add_scalar(f"{phase}/IoU", iou, epoch)
                     writer.add_scalar(f"{phase}/F1", f1_score, epoch)
                     writer.add_scalar(f"{phase}/Precision", prec, epoch)
                     writer.add_scalar(f"{phase}/Recall", rec, epoch)
@@ -100,11 +101,18 @@ def binary_segmentation_train(
                     lr_scheduler.step()
 
             # reset metrics before next phase epoch
-            accuracy.reset()
+            jaccard.reset()
             epoch_loss.reset()
             f1.reset()
             precision.reset()
             recall.reset()
+
+        if epoch % 100 == 0:  # run inference on test dataset every 100 epochs
+            generate_binary_test_metrics(
+                model, dataloaders["test"], device, config.num_classes
+            )
+    # run inference on test dataset
+    generate_binary_test_metrics(model, dataloaders["test"], device, config.num_classes)
 
     if rank == 0:
         save_model(

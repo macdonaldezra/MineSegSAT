@@ -4,8 +4,8 @@ from torch.utils.data.distributed import DistributedSampler
 
 from mine_seg_sat.config import TrainingConfig
 from mine_seg_sat.dataset import MineSATDataset
-from mine_seg_sat.train.scale import get_band_norm_values_from_root
-from mine_seg_sat.train.transforms import (
+from mine_seg_sat.train_utils.scale import get_band_norm_values_from_root
+from mine_seg_sat.train_utils.transforms import (
     get_test_transforms,
     get_training_transforms,
     get_validation_transforms,
@@ -83,7 +83,7 @@ def get_minesat_dataloaders(
 
 
 def get_dataloader(rank: int, world_size: int, config: TrainingConfig) -> dict:
-    if config.dataset == "minesat":
+    if config.dataset == "minesegsat":
         return get_minesat_dataloaders(rank, world_size, config)
     else:
         raise ValueError(f"Unknown dataset {config.dataset}")

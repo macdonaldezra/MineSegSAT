@@ -166,9 +166,8 @@ def get_metric_df(metrics: T.Dict[str, T.Dict[str, float]]) -> pd.DataFrame:
 def generate_binary_test_metrics(
     model: torch.nn.Module,
     dataloader: torch.utils.data.DataLoader,
-    device: str,
+    device: torch.device,
     num_classes: int,
-    output_path: Path,
 ) -> T.Dict[str, T.Dict[str, float]]:
     """
     Generate test metrics.
@@ -176,24 +175,28 @@ def generate_binary_test_metrics(
     metrics = get_metrics(num_classes, device)
     model.eval()
 
-    if "0" in device:
+    if "0" in str(device):
         print("Computing output metrics on test dataset...")
 
     with torch.no_grad():
         for inputs, labels in dataloader:
-            images, masks = inputs.to(device), labels.to(device)
-            outputs = model(images)
+            inputs = inputs.to(device)
+            labels = labels.to(device)
+            outputs = model(inputs)
 
-            prob_mask = outputs.sigmoid()
-            prob_mask = (prob_mask > 0.5).float()
-            metrics.update(prob_mask, masks)
+            prob_mask = outputs.sigmoid().float()
+            labels = labels.unsqueeze(1)
+            metrics.update(prob_mask, labels)
 
     out_metrics = metrics.compute()
     metrics.reset()
 
-    if "0" in device:
+    if "0" in str(device):
+        out_string = "Final Epoch Test "
         for entry in out_metrics.keys():
-            print(f"{entry}: {out_metrics[entry].cpu().item()}")
+            out_string += f" {entry}: {out_metrics[entry].cpu().item()}"
+
+        print(out_string)
 
 
 def generate_test_metrics(

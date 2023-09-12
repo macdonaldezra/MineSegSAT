@@ -12,9 +12,9 @@ from torch.utils.tensorboard import SummaryWriter
 from mine_seg_sat.config import TrainingConfig, config_to_yaml, get_model_config
 from mine_seg_sat.constants import EXTRACTED_BANDS
 from mine_seg_sat.dataloader import get_dataloader
-from mine_seg_sat.segformer import SegFormer
-from mine_seg_sat.train.binary import binary_segmentation_train
-from mine_seg_sat.train.utils import get_loss, get_lr_scheduler
+from mine_seg_sat.models.segformer import SegFormer
+from mine_seg_sat.train_utils.binary import binary_segmentation_train
+from mine_seg_sat.train_utils.utils import get_loss, get_lr_scheduler
 from mine_seg_sat.utils.distributed import cleanup, setup
 from mine_seg_sat.utils.path import get_experiment_outpath
 
@@ -76,16 +76,8 @@ def main(rank: int, world_size: int, config: TrainingConfig) -> None:
             writer=writer,
         )
     else:
-        train(
-            config=config,
-            dataloaders=dataloaders,
-            rank=rank,
-            optimizer=optimizer,
-            model=model,
-            loss_function=criterion,
-            lr_scheduler=scheduler,
-            writer=writer,
-        )
+        raise ValueError("Only binary segmentation is supported at the moment")
+
     del model
     del dataloaders
     gc.collect()
