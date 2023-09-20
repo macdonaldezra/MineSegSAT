@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pandas as pd
 import torch
+from segmentation_models_pytorch import Unet, UnetPlusPlus
 from segmentation_models_pytorch.losses import (
     DiceLoss,
     FocalLoss,
@@ -20,6 +21,7 @@ from torchmetrics import (
 )
 
 from mine_seg_sat.config import TrainingConfig
+from mine_seg_sat.models.segformer import SegFormer
 
 
 def get_lr_scheduler(
@@ -30,11 +32,14 @@ def get_lr_scheduler(
     """
     if config.lr_scheduler == "cosine_restart":
         return torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(
-            optimizer, T_0=1, T_mult=2, eta_min=9e-5, verbose=False
+            optimizer, T_0=1, T_mult=2, eta_min=config.min_learning_rate, verbose=False
         )
     if config.lr_scheduler == "cosine":
         return torch.optim.lr_scheduler.CosineAnnealingLR(
-            optimizer, T_max=config.epochs, eta_min=9e-6, verbose=True
+            optimizer,
+            T_max=config.epochs,
+            eta_min=config.min_learning_rate,
+            verbose=True,
         )
     elif config.lr_scheduler == "onecycle":
         return torch.optim.lr_scheduler.OneCycleLR(
@@ -50,7 +55,12 @@ def get_lr_scheduler(
         )
     elif config.lr_scheduler == "plateau":
         return torch.optim.lr_scheduler.ReduceLROnPlateau(
-            optimizer, mode="min", factor=0.8, patience=8, min_lr=5e-5, verbose=True
+            optimizer,
+            mode="min",
+            factor=0.8,
+            patience=8,
+            min_lr=config.min_learning_rate,
+            verbose=True,
         )
     elif config.lr_scheduler == "polynomial":
         return torch.optim.lr_scheduler.PolynomialLR(
@@ -81,11 +91,41 @@ def get_loss(config: TrainingConfig, rank: T.Optional[str] = None) -> torch.nn.M
     elif config.loss == "focal":
         return FocalLoss(mode, alpha=2)
     elif config.loss == "tversky":
-        return TverskyLoss(mode, smooth=1, alpha=2, beta=2)
+        return TverskyLoss(mode, smooth=1, alpha=4, beta=4)
     elif config.loss == "lovasz":
         return LovaszLoss(mode, ignore_index=config.ignore_index)
     else:
         raise ValueError(f"Loss not found for {config.loss}.")
+
+
+def get_model(config: TrainingConfig, device: torch.device) -> torch.nn.Module:
+    """
+    Get a model for training.
+    """
+    if config.model == "unet":
+        model = Unet(
+            encoder_name=config.encoder,
+            decoder_attention_type="scse",
+            encoder_weights=None,  # can't use weights with 3-channel input...
+            classes=config.num_classes,
+            in_channels=config.in_channels,
+        )
+    elif config.model == "unetplusplus":
+        model = UnetPlusPlus(
+            encoder_name=config.encoder,
+            decoder_attention_type="scse",
+            encoder_weights=None,
+            classes=config.num_classes,
+            in_channels=config.in_channels,
+        )
+    elif config.model == "segformer":
+        model = SegFormer(
+            in_channels=config.in_channels, num_classes=config.num_classes
+        )
+    else:
+        raise ValueError(f"Model not found for {config.model}.")
+
+    return model.to(device)
 
 
 def get_metrics(

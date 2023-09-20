@@ -385,26 +385,32 @@ class SegFormerDecoder(torch.nn.Module):
 
 class SegFormer(torch.nn.Module):
     def __init__(
-        self, in_channels: int, num_classes: int, return_logits: bool = False
+        self,
+        in_channels: int,
+        num_classes: int,
+        hidden_state_channels: tuple[int] = (64, 128, 320, 512),
+        transformer_depth: tuple[int] = (3, 4, 18, 3),
+        dropout_p: float = 0.1,
+        dropout_path_p: float = 0.15,
+        return_logits: bool = False,
     ) -> None:
         super().__init__()
-        HIDDEN_STATE_CHANNELS = (64, 128, 320, 512)
         self.encoder = SegformerEncoder(
             in_channels=in_channels,
-            embed_dims=HIDDEN_STATE_CHANNELS,
+            embed_dims=hidden_state_channels,
             num_heads=(1, 2, 5, 8),
             patch_sizes=(7, 3, 3, 3),
             strides=(4, 2, 2, 2),
-            depths=(3, 4, 18, 3),
+            depths=transformer_depth,
             sr_ratios=(8, 4, 2, 1),
-            dropout_p=0.1,
-            dropout_path_p=0.15,
+            dropout_p=dropout_p,
+            dropout_path_p=dropout_path_p,
         )
         self.decoder = SegFormerDecoder(
-            in_channels=HIDDEN_STATE_CHANNELS,
+            in_channels=hidden_state_channels,
             num_classes=num_classes,
             embed_dim=256,
-            dropout_p=0.1,
+            dropout_p=dropout_p,
         )
         self.return_logits = return_logits
         self.apply(self._init_weights)
@@ -428,7 +434,6 @@ class SegFormer(torch.nn.Module):
             x, size=image_dim, mode="bilinear", align_corners=False
         )
         if not self.return_logits:
-            # x = torch.sigmoid(x)
             x = torch.nn.functional.softmax(x, dim=1)
 
         return x

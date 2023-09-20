@@ -41,6 +41,7 @@ class TrainingConfig(BaseModel):
     lr_scheduler: str
     learning_rate: float
     max_learning_rate: Optional[float] = 0.05
+    min_learning_rate: Optional[float] = 1e-5
     learning_rate_weight_decay: float
     batch_size: int
     save_frequency: int
@@ -48,6 +49,8 @@ class TrainingConfig(BaseModel):
     weight_filepath: Union[None, Path] = None
     ignore_index: Optional[int] = None
     model: str
+    in_channels: int = 12
+    encoder: Optional[str] = "resnet50"
     num_dataloader_workers: int
     profile: bool = False
     has_aux_classifier: bool = False

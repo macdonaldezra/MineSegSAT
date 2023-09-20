@@ -11,7 +11,6 @@ def get_training_transforms(dim: int) -> A.Compose:
         A.VerticalFlip(p=0.5),
         A.Rotate(p=0.5),
         A.HorizontalFlip(p=0.5),
-        A.ChannelShuffle(p=0.3),
         ToTensorV2(),
     ]
 

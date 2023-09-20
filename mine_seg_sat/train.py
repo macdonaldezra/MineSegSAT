@@ -5,16 +5,19 @@ import warnings  # Added here due to a SyntaxWarning raised by a pre-trained mod
 warnings.filterwarnings("ignore", category=SyntaxWarning)
 
 
+import segmentation_models_pytorch as smp
 import torch
 import torch.multiprocessing as mp
 from torch.utils.tensorboard import SummaryWriter
 
-from mine_seg_sat.config import TrainingConfig, config_to_yaml, get_model_config
+from mine_seg_sat.config import (TrainingConfig, config_to_yaml,
+                                 get_model_config)
 from mine_seg_sat.constants import EXTRACTED_BANDS
 from mine_seg_sat.dataloader import get_dataloader
 from mine_seg_sat.models.segformer import SegFormer
 from mine_seg_sat.train_utils.binary import binary_segmentation_train
-from mine_seg_sat.train_utils.utils import get_loss, get_lr_scheduler
+from mine_seg_sat.train_utils.utils import (get_loss, get_lr_scheduler,
+                                            get_model)
 from mine_seg_sat.utils.distributed import cleanup, setup
 from mine_seg_sat.utils.path import get_experiment_outpath
 
@@ -37,6 +40,7 @@ def main(rank: int, world_size: int, config: TrainingConfig) -> None:
     else:
         writer = None
 
+    device = torch.device("cuda", rank)
     dataloaders = get_dataloader(rank, world_size, config)
     dataset_len = len(dataloaders["train"].dataset) + len(dataloaders["val"].dataset)
     img, msk = dataloaders["train"].dataset[0]
@@ -48,11 +52,7 @@ def main(rank: int, world_size: int, config: TrainingConfig) -> None:
         )
         config_to_yaml(config, config.output_path / "config.yaml")
 
-    model = SegFormer(
-        in_channels=len(EXTRACTED_BANDS),
-        num_classes=config.num_classes,
-        return_logits=True,
-    ).to(f"cuda:{rank}")
+    model = get_model(config, device)
     optimizer = torch.optim.AdamW(model.parameters(), lr=config.learning_rate)
 
     criterion = get_loss(config, rank)
