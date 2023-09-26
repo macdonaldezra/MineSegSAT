@@ -1,3 +1,5 @@
+import math
+
 import torch
 import torch.nn.functional as F
 from timm.models.layers import drop_path, trunc_normal_
@@ -24,9 +26,9 @@ class EfficientSelfAttention(torch.nn.Module):
         self.all_head_size = self.num_heads * self.attention_head_size
         self.attn_score_divisor = self.attention_head_size**0.5
 
-        self.query = torch.nn.Linear(self.hidden_size, self.all_head_size)
-        self.key = torch.nn.Linear(self.hidden_size, self.all_head_size)
-        self.value = torch.nn.Linear(self.hidden_size, self.all_head_size)
+        self.query = torch.nn.Linear(self.hidden_size, self.hidden_size)
+        self.key = torch.nn.Linear(self.hidden_size, self.hidden_size)
+        self.value = torch.nn.Linear(self.hidden_size, self.hidden_size)
 
         self.dropout = torch.nn.Dropout(dropout_p)
         self.dense = torch.nn.Linear(self.hidden_size, self.hidden_size)
@@ -41,14 +43,18 @@ class EfficientSelfAttention(torch.nn.Module):
             )
             self.layer_norm = torch.nn.LayerNorm(hidden_size)
 
-    def transpose_for_scores(self, hidden_states):
-        new_shape = hidden_states.size()[:-1] + (
-            self.num_heads,
-            self.attention_head_size,
-        )
-        hidden_states = hidden_states.view(new_shape)
+        self.apply(self._init_weights)
 
-        return hidden_states.permute(0, 2, 1, 3)
+    def _init_weights(self, m):
+        if isinstance(m, torch.nn.Linear):
+            trunc_normal_(m.weight, std=0.02)
+            if isinstance(m, torch.nn.Linear) and m.bias is not None:
+                torch.nn.init.constant_(m.bias, 0)
+        elif isinstance(m, torch.nn.LayerNorm):
+            torch.nn.init.constant_(m.bias, 0)
+            torch.nn.init.constant_(m.weight, 1.0)
+        elif isinstance(m, torch.nn.Conv2d):
+            torch.nn.init.kaiming_normal_(m.weight, mode="fan_out", nonlinearity="relu")
 
     def forward(
         self,
@@ -57,48 +63,48 @@ class EfficientSelfAttention(torch.nn.Module):
         width,
         return_attn: bool = False,
     ):
-        query_layer = self.transpose_for_scores(self.query(hidden_states))
+        batch, n, c = hidden_states.shape
+        q = (
+            self.query(hidden_states)
+            .reshape(batch, n, self.num_heads, c // self.num_heads)
+            .permute(0, 2, 1, 3)
+        )
 
         if self.sr_ratio > 1:
-            batch_size, _, num_channels = hidden_states.shape
-            # Reshape to (batch_size, num_channels, height, width)
-            hidden_states = hidden_states.permute(0, 2, 1).reshape(
-                batch_size, num_channels, height, width
-            )
+            # Reshape to (batch_size, channels, height, width)
+            x = hidden_states.permute(0, 2, 1).reshape(batch, c, height, width)
             # Apply sequence reduction
-            hidden_states = self.sr(hidden_states)
-            # Reshape back to (batch_size, seq_len, num_channels)
-            hidden_states = hidden_states.reshape(batch_size, num_channels, -1).permute(
-                0, 2, 1
-            )
-            hidden_states = self.layer_norm(hidden_states)
+            x = self.sr(x).reshape(batch, c, -1).permute(0, 2, 1)
+            x = self.layer_norm(x)
+            hidden_states = x
 
-        key_layer = self.transpose_for_scores(self.key(hidden_states))
-        value_layer = self.transpose_for_scores(self.value(hidden_states))
+        k = (
+            self.key(hidden_states)
+            .reshape(batch, -1, self.num_heads, c // self.num_heads)
+            .permute(0, 2, 1, 3)
+        )
+        v = (
+            self.value(hidden_states)
+            .reshape(batch, -1, self.num_heads, c // self.num_heads)
+            .permute(0, 2, 1, 3)
+        )
 
         # Take the dot product between "query" and "key" to get the raw attention scores.
-        attention_scores = torch.matmul(query_layer, key_layer.transpose(-1, -2))
-        attention_scores = attention_scores / self.attn_score_divisor
+        attn = torch.matmul(q, k.transpose(-2, -1)) / self.attn_score_divisor
 
-        # Normalize the attention scores to probabilities.
-        attention_probs = torch.nn.functional.softmax(attention_scores, dim=-1)
-
-        # This is actually dropping out entire tokens to attend to, which might
-        # seem a bit unusual, but is taken from the original Transformer paper.
+        # Normalize the attention scores to probabilities
+        attention_probs = torch.nn.functional.softmax(attn, dim=-1)
         attention_probs = self.dropout(attention_probs)
 
-        outputs = torch.matmul(attention_probs, value_layer)
-        outputs = outputs.permute(0, 2, 1, 3).contiguous()
-        new_context_layer_shape = outputs.size()[:-2] + (self.all_head_size,)
-        outputs = outputs.view(new_context_layer_shape)
+        outputs = torch.matmul(attention_probs, v).transpose(1, 2).reshape(batch, n, c)
 
         outputs = self.dense(outputs)
         outputs = self.dropout(outputs)
         if return_attn:
             attn_output = {
-                "key": key_layer,
-                "value": value_layer,
-                "query": query_layer,
+                "key": k,
+                "value": v,
+                "query": q,
                 "attention": attention_probs,
             }
             return outputs, attn_output
@@ -118,6 +124,23 @@ class OverlapPatchEmbedding(torch.nn.Module):
             padding=(patch_size // 2, patch_size // 2),
         )
         self.norm = torch.nn.LayerNorm(embed_dim)
+
+        self.apply(self._init_weights)
+
+    def _init_weights(self, m):
+        if isinstance(m, torch.nn.Linear):
+            trunc_normal_(m.weight, std=0.02)
+            if isinstance(m, torch.nn.Linear) and m.bias is not None:
+                torch.nn.init.constant_(m.bias, 0)
+        elif isinstance(m, torch.nn.LayerNorm):
+            torch.nn.init.constant_(m.bias, 0)
+            torch.nn.init.constant_(m.weight, 1.0)
+        elif isinstance(m, torch.nn.Conv2d):
+            fan_out = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
+            fan_out //= m.groups
+            m.weight.data.normal_(0, math.sqrt(2.0 / fan_out))
+            if m.bias is not None:
+                m.bias.data.zero_()
 
     def forward(self, x):
         x = self.proj(x)
@@ -149,7 +172,7 @@ class MixedFeedForwardNetwork(torch.nn.Module):
         x = self.mlp_in(x)
 
         batch_size, _, num_channels = x.shape
-        x = x.transpose(1, 2).view(batch_size, num_channels, height, width)
+        x = x.transpose(1, 2).reshape(batch_size, num_channels, height, width)
         x = self.conv(x)
         x = x.flatten(2).transpose(1, 2)
         x = torch.nn.functional.gelu(x)
@@ -299,11 +322,9 @@ class SegformerEncoder(torch.nn.Module):
             hidden_states = norm(hidden_states)
 
             # 4. Reshape back to (b, c, h, w)
-            hidden_states = (
-                hidden_states.reshape(batch_size, height, width, -1)
-                .permute(0, 3, 1, 2)
-                .contiguous()
-            )
+            hidden_states = hidden_states.reshape(
+                batch_size, height, width, -1
+            ).permute(0, 3, 1, 2)
 
             if return_attn:
                 for k, v in attn_output.items():
@@ -392,7 +413,7 @@ class SegFormer(torch.nn.Module):
         transformer_depth: tuple[int] = (3, 4, 18, 3),
         dropout_p: float = 0.1,
         dropout_path_p: float = 0.15,
-        return_logits: bool = False,
+        return_logits: bool = True,
     ) -> None:
         super().__init__()
         self.encoder = SegformerEncoder(
@@ -413,6 +434,7 @@ class SegFormer(torch.nn.Module):
             dropout_p=dropout_p,
         )
         self.return_logits = return_logits
+
         self.apply(self._init_weights)
 
     def _init_weights(self, m):
