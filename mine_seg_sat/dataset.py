@@ -9,7 +9,8 @@ import pandas as pd
 import tifffile as tiff
 import torch
 
-from mine_seg_sat.constants import MAX_RESOLUTION, MID_RESOLUTION, MIN_RESOLUTION
+from mine_seg_sat.constants import (MAX_RESOLUTION, MID_RESOLUTION,
+                                    MIN_RESOLUTION)
 
 
 class MineSATDataset(torch.utils.data.Dataset):
@@ -398,11 +399,15 @@ class MineSATDataset(torch.utils.data.Dataset):
         # Create a color image using RGB bands
         RGB = np.stack([B04, B03, B02], axis=-1)
 
+        # Calculate NBR (Normalized Burn Ratio)
+        NBR = (B08 - B12) / (B08 + B12)
+
         # Create a false-color composite image
         false_color = np.stack([B08, B04, B03], axis=-1)
 
         self.display_images(
             {
+                "NBR": NBR,
                 "NDVI": NDVI,
                 "NDBI": NDBI,
                 "NDWI": NDWI,
