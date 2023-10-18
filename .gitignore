@@ -159,3 +159,7 @@ output/
 tensorboard/
 custom_scripts/
 shrapnl/
+**.tif
+canada_shp/
+download_file
+.DS_Store
