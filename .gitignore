@@ -159,3 +159,5 @@ output/
 tensorboard/
 custom_scripts/
 shrapnl/
+**.tif
+.DS_Store

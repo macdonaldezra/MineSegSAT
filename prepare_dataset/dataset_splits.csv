@@ -1,0 +1,5 @@
+split,data_path,mask_path
+train,images_directory1,mask_directory1
+train,images_directory2,mask_directory2
+val,images_directory3,mask_directory3
+test,images_directory4,mask_directory4
