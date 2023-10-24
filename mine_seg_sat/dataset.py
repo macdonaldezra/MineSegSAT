@@ -345,6 +345,23 @@ class MineSATDataset(torch.utils.data.Dataset):
 
     #     plt.show()
     @staticmethod
+    # def display_images(image_dict):
+    #     num_images = len(image_dict)
+    #     # Calculate the number of rows based on the number of images
+    #     num_rows = int(np.ceil(num_images / 3.0))
+    #     fig, axes = plt.subplots(num_rows, 3, figsize=(12, 4 * num_rows))
+    #     fig.tight_layout()
+    #     for i, (title, image) in enumerate(image_dict.items()):
+    #         row = i // 3
+    #         col = i % 3
+    #         if num_rows == 1:  # If there's only one row, axes is a 1D array
+    #             ax = axes[col]
+    #         else:
+    #             ax = axes[row, col]
+    #         ax.imshow(image)
+    #         ax.set_title(title)
+    #         ax.axis("off")
+    #     plt.show()
     def display_images(image_dict):
         num_images = len(image_dict)
         # Calculate the number of rows based on the number of images
@@ -359,7 +376,14 @@ class MineSATDataset(torch.utils.data.Dataset):
                 ax = axes[col]
             else:
                 ax = axes[row, col]
-            ax.imshow(image)
+
+            # Adjust colormap and normalization for NBR
+            if title == "NBR":
+                im = ax.imshow(image, cmap=plt.cm.RdYlGn, vmin=-1, vmax=1)
+                plt.colorbar(im, ax=ax, orientation='vertical')
+            else:
+                ax.imshow(image)
+
             ax.set_title(title)
             ax.axis("off")
 
@@ -388,6 +412,10 @@ class MineSATDataset(torch.utils.data.Dataset):
         )
         B04 = self.scale_band(
             tiff.imread(f"{self.data_path.as_posix()}/{filepath}/B04.tif"),
+            percentile=percentile,
+        )
+        B07 = self.scale_band(
+            tiff.imread(f"{self.data_path.as_posix()}/{filepath}/B07.tif"),
             percentile=percentile,
         )
         B08 = self.scale_band(
@@ -427,8 +455,12 @@ class MineSATDataset(torch.utils.data.Dataset):
         # Create a color image using RGB bands
         RGB = np.stack([B04, B03, B02], axis=-1)
 
-        # Calculate NBR (Normalized Burn Ratio)
-        NBR = (B08 - B12) / (B08 + B12)
+        # Upscale B07 to match the resolution of B04
+        B07_rescaled = cv2.resize(
+            B07, (B04.shape[1], B04.shape[0]), interpolation=cv2.INTER_CUBIC)
+
+        # Now compute NBR
+        NBR = (B08 - B07_rescaled) / (B08 + B07_rescaled)
         # Create a false-color composite image
         false_color = np.stack([B08, B04, B03], axis=-1)
 
