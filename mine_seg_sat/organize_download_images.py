@@ -104,3 +104,20 @@ def batch_move_files(source_path_list: list) -> None:
 
 def main():
     # Get all folders from download_file folder
+    source_path = "../download_file/"
+    subfolders_list = fast_scandir(source_path)
+
+    # Get folders that are under tiles folder
+    # note that we need the / to get folders
+    subfolders_with_keyword_list = get_folders_with_keyword("tiles/")
+
+    all_files = []
+
+    for subfolder in subfolders_with_keyword_list:
+        current_list = get_list_of_files_in_directory(subfolder)
+        all_files.extend(current_list)
+
+    batch_move_files(all_files)
+
+if __name__ == "__main__":
+    main()
