@@ -19,7 +19,8 @@
       "editor.tabSize": 4,
       "editor.codeActionsOnSave": {
         "source.organizeImports": true
-      }
+      },
+      "editor.defaultFormatter": "ms-python.autopep8"
     },
     "[yaml]": {
       "editor.insertSpaces": true,
@@ -44,7 +45,7 @@
     "editor.formatOnSave": true,
 
     // Formatting with black
-    "python.formatting.provider": "black",
+    "python.formatting.provider": "none",
 
     // Import sorting with isort
     // "isort.path": "${env:PYENV_ROOT}/versions/mine-seg-sat-env/bin/isort",

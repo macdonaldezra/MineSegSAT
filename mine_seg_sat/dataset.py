@@ -9,7 +9,8 @@ import pandas as pd
 import tifffile as tiff
 import torch
 
-from mine_seg_sat.constants import MAX_RESOLUTION, MID_RESOLUTION, MIN_RESOLUTION
+from mine_seg_sat.constants import (MAX_RESOLUTION, MID_RESOLUTION,
+                                    MIN_RESOLUTION)
 
 
 class MineSATDataset(torch.utils.data.Dataset):
@@ -64,7 +65,8 @@ class MineSATDataset(torch.utils.data.Dataset):
         self.maskpaths = self.df.loc[
             self.df["split"] == self.split, "mask_path"
         ].tolist()
-        assert len(self.filepaths) > 0, f"No files found for split {self.split}"
+        assert len(
+            self.filepaths) > 0, f"No files found for split {self.split}"
         self.data_path = data_path
         self.index_to_rgb = {
             0: (0, 0, 0),
@@ -89,19 +91,22 @@ class MineSATDataset(torch.utils.data.Dataset):
         maskpath = self.maskpaths[index]
         high_resolution_bands = np.stack(
             [
-                tiff.imread(f"{self.data_path.as_posix()}/{filepath}/{band}.tif")
+                tiff.imread(
+                    f"{self.data_path.as_posix()}/{filepath}/{band}.tif")
                 for band in MAX_RESOLUTION
             ]
         )
         mid_resolution_bands = np.stack(
             [
-                tiff.imread(f"{self.data_path.as_posix()}/{filepath}/{band}.tif")
+                tiff.imread(
+                    f"{self.data_path.as_posix()}/{filepath}/{band}.tif")
                 for band in MID_RESOLUTION
             ]
         )
         min_resolution_bands = np.stack(
             [
-                tiff.imread(f"{self.data_path.as_posix()}/{filepath}/{band}.tif")
+                tiff.imread(
+                    f"{self.data_path.as_posix()}/{filepath}/{band}.tif")
                 for band in MIN_RESOLUTION
             ]
         )
@@ -113,13 +118,15 @@ class MineSATDataset(torch.utils.data.Dataset):
             # Rescale lower resolution bands to 10m resolution
             mid_resolution_bands = np.stack(
                 [
-                    cv2.resize(band, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
+                    cv2.resize(band, None, fx=2, fy=2,
+                               interpolation=cv2.INTER_CUBIC)
                     for band in mid_resolution_bands
                 ]
             )
             min_resolution_bands = np.stack(
                 [
-                    cv2.resize(band, None, fx=6, fy=6, interpolation=cv2.INTER_CUBIC)
+                    cv2.resize(band, None, fx=6, fy=6,
+                               interpolation=cv2.INTER_CUBIC)
                     for band in min_resolution_bands
                 ]
             )
@@ -136,7 +143,8 @@ class MineSATDataset(torch.utils.data.Dataset):
 
         if callable(self.transformations) and not return_original:
             if isinstance(all_bands, np.ndarray):
-                all_bands = all_bands.transpose(1, 2, 0)  # (C, H, W) -> (H, W, C)
+                all_bands = all_bands.transpose(
+                    1, 2, 0)  # (C, H, W) -> (H, W, C)
                 if self.min_max_normalization:
                     all_bands = self.min_max_normalize(all_bands)
                 data = self.transformations(image=all_bands, mask=mask)
@@ -219,7 +227,8 @@ class MineSATDataset(torch.utils.data.Dataset):
                 ],
                 axis=-1,
             )
-            mask = tiff.imread(f"{self.data_path.as_posix()}/{paths[1]}/mask.tif")
+            mask = tiff.imread(
+                f"{self.data_path.as_posix()}/{paths[1]}/mask.tif")
             title = self.parse_title(i)
 
             axes[i, 0].imshow(image)
@@ -322,17 +331,61 @@ class MineSATDataset(torch.utils.data.Dataset):
         fig.tight_layout()
         plt.show()
 
+    # @staticmethod
+    # def display_images(image_dict):
+    #     fig, axes = plt.subplots(2, 3, figsize=(12, 8))
+    #     fig.tight_layout()
+
+    #     for i, (title, image) in enumerate(image_dict.items()):
+    #         row = i // 3
+    #         col = i % 3
+    #         axes[row, col].imshow(image)
+    #         axes[row, col].set_title(title)
+    #         axes[row, col].axis("off")
+
+    #     plt.show()
     @staticmethod
+    # def display_images(image_dict):
+    #     num_images = len(image_dict)
+    #     # Calculate the number of rows based on the number of images
+    #     num_rows = int(np.ceil(num_images / 3.0))
+    #     fig, axes = plt.subplots(num_rows, 3, figsize=(12, 4 * num_rows))
+    #     fig.tight_layout()
+    #     for i, (title, image) in enumerate(image_dict.items()):
+    #         row = i // 3
+    #         col = i % 3
+    #         if num_rows == 1:  # If there's only one row, axes is a 1D array
+    #             ax = axes[col]
+    #         else:
+    #             ax = axes[row, col]
+    #         ax.imshow(image)
+    #         ax.set_title(title)
+    #         ax.axis("off")
+    #     plt.show()
     def display_images(image_dict):
-        fig, axes = plt.subplots(2, 3, figsize=(12, 8))
+        num_images = len(image_dict)
+        # Calculate the number of rows based on the number of images
+        num_rows = int(np.ceil(num_images / 3.0))
+        fig, axes = plt.subplots(num_rows, 3, figsize=(12, 4 * num_rows))
         fig.tight_layout()
 
         for i, (title, image) in enumerate(image_dict.items()):
             row = i // 3
             col = i % 3
-            axes[row, col].imshow(image)
-            axes[row, col].set_title(title)
-            axes[row, col].axis("off")
+            if num_rows == 1:  # If there's only one row, axes is a 1D array
+                ax = axes[col]
+            else:
+                ax = axes[row, col]
+
+            # Adjust colormap and normalization for NBR
+            if title == "NBR":
+                im = ax.imshow(image, cmap=plt.cm.RdYlGn, vmin=-1, vmax=1)
+                plt.colorbar(im, ax=ax, orientation='vertical')
+            else:
+                ax.imshow(image)
+
+            ax.set_title(title)
+            ax.axis("off")
 
         plt.show()
 
@@ -359,6 +412,10 @@ class MineSATDataset(torch.utils.data.Dataset):
         )
         B04 = self.scale_band(
             tiff.imread(f"{self.data_path.as_posix()}/{filepath}/B04.tif"),
+            percentile=percentile,
+        )
+        B07 = self.scale_band(
+            tiff.imread(f"{self.data_path.as_posix()}/{filepath}/B07.tif"),
             percentile=percentile,
         )
         B08 = self.scale_band(
@@ -398,11 +455,18 @@ class MineSATDataset(torch.utils.data.Dataset):
         # Create a color image using RGB bands
         RGB = np.stack([B04, B03, B02], axis=-1)
 
+        # Upscale B07 to match the resolution of B04
+        B07_rescaled = cv2.resize(
+            B07, (B04.shape[1], B04.shape[0]), interpolation=cv2.INTER_CUBIC)
+
+        # Now compute NBR
+        NBR = (B08 - B07_rescaled) / (B08 + B07_rescaled)
         # Create a false-color composite image
         false_color = np.stack([B08, B04, B03], axis=-1)
 
         self.display_images(
             {
+                "NBR": NBR,
                 "NDVI": NDVI,
                 "NDBI": NDBI,
                 "NDWI": NDWI,
