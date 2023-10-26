@@ -62,8 +62,8 @@ def move_file(source_path: str, label: str, id: int) -> None:
     """
     file_name = source_path.split("/")[-1]
     file_date = source_path.split("/")[-4]
-    destination_folder = f"../prepare_dataset/{label}_directory{id}"
-    destination_path = f"../prepare_dataset/{label}_directory{id}/{file_date}_{file_name}"
+    destination_folder = os.path.join(os.path.dirname(__file__), f"../prepare_dataset/{label}_directory{id}")
+    destination_path = os.path.join(os.path.dirname(__file__),f"../prepare_dataset/{label}_directory{id}/{file_date}_{file_name}")
 
     if not os.path.isdir(destination_folder):
         os.makedirs(os.path.dirname(destination_path))
@@ -72,7 +72,7 @@ def move_file(source_path: str, label: str, id: int) -> None:
         print("File exists.")
         return
 
-    shutil.copy(source_path, destination_path)
+    shutil.move(source_path, destination_path)
     print(f"File copied to destination: {destination_path}.")
 
 def batch_move_files(source_path_list: list) -> None:
@@ -99,17 +99,16 @@ def batch_move_files(source_path_list: list) -> None:
         if "mask" in current_path:
             move_file(current_path, "mask", current_id)
         else:
-            print(f"image: {current_path}")
             move_file(current_path, "image", current_id)
 
 def main():
     # Get all folders from download_file folder
-    source_path = "../download_file/"
+    source_path = os.path.join(os.path.dirname(__file__), "../download_file/")
     subfolders_list = fast_scandir(source_path)
 
     # Get folders that are under tiles folder
     # note that we need the / to get folders
-    subfolders_with_keyword_list = get_folders_with_keyword("tiles/")
+    subfolders_with_keyword_list = get_folders_with_keyword("tiles/", subfolders_list)
 
     all_files = []
 
