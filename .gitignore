@@ -161,3 +161,6 @@ custom_scripts/
 shrapnl/
 **.tif
 .DS_Store
+
+# project related
+download_file/*
