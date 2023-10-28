@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="7130a5a8-f14a-4e9a-ae8c-d2aaf3afffb5" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/notebooks/download.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/download.ipynb" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 8
+}</component>
+  <component name="ProjectId" id="2WKRHaecmkR3MCcFMf7Pk5YuQ0d" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/notebooks" />
+    </key>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="7130a5a8-f14a-4e9a-ae8c-d2aaf3afffb5" name="Changes" comment="" />
+      <created>1696479206476</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1696479206476</updated>
+      <workItem from="1696479212593" duration="7469000" />
+      <workItem from="1696615439422" duration="1025000" />
+      <workItem from="1696616473171" duration="3298000" />
+      <workItem from="1697036457399" duration="5473000" />
+      <workItem from="1697496654171" duration="4463000" />
+      <workItem from="1697566347611" duration="4122000" />
+      <workItem from="1697669322230" duration="3525000" />
+      <workItem from="1697672992339" duration="966000" />
+      <workItem from="1697673978909" duration="3086000" />
+      <workItem from="1697677078742" duration="123000" />
+      <workItem from="1697677222890" duration="11761000" />
+      <workItem from="1698108374537" duration="320000" />
+      <workItem from="1698110005063" duration="1396000" />
+      <workItem from="1698172823763" duration="7000" />
+      <workItem from="1698172973349" duration="433000" />
+      <workItem from="1698173537795" duration="87000" />
+      <workItem from="1698173696792" duration="217000" />
+      <workItem from="1698182470836" duration="2321000" />
+      <workItem from="1698190393271" duration="212000" />
+      <workItem from="1698209163847" duration="1052000" />
+      <workItem from="1698211105340" duration="38000" />
+      <workItem from="1698351050963" duration="108000" />
+      <workItem from="1698351325108" duration="2308000" />
+      <workItem from="1698358739562" duration="2865000" />
+      <workItem from="1698469335823" duration="15000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="UnknownFeatures">
+    <option featureType="com.intellij.fileTypeFactory" implementationName=".env" />
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/Capstone$dataset.coverage" NAME="dataset Coverage Results" MODIFIED="1696544640523" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/mine_seg_sat" />
+  </component>
+</project>
