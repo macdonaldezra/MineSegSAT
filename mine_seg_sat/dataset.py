@@ -477,55 +477,34 @@ class MineSATDataset(torch.utils.data.Dataset):
         )
 
 
-    def get_numerical_values(self, index: int, percentile: int = 95):
-        """
-        Calculate various indices and transformations based on satellite image bands.
+    def downsample(self, image, scale_factor):
 
-        Parameters:
-        index (int): Index of the image in the dataset.
-        percentile (int): Percentile value used for scaling the bands.
+        if not (0 < scale_factor < 1):
+            raise ValueError("Scale factor must be between 0 and 1.")
+        dimensions = (int(image.shape[1] * scale_factor), int(image.shape[0] * scale_factor))
+        downsampled_image = cv2.resize(image, dimensions, interpolation=cv2.INTER_AREA)
+        return downsampled_image
 
-        Returns:
-        dict: A dictionary containing numerical values for various indices and transformations.
-        """
-        # Assuming that all the necessary functions and variables are defined elsewhere in the class
+    def upsample(self, image, target_shape):
+        upsampled_image = cv2.resize(image, (target_shape[1], target_shape[0]), interpolation=cv2.INTER_CUBIC)
+        return upsampled_image
+
+    def get_numerical_values(self, index: int, percentile: int = 95, scale_factor: float = 0.05):
+    # Assuming that all the necessary functions and variables are defined elsewhere in the class
         filepath = self.filepaths[index]
-        maskpath = self.maskpaths[index]
 
         # Load and scale the bands
-        B02 = self.scale_band(tiff.imread(f"{self.data_path.as_posix()}/{filepath}/B02.tif"), percentile=percentile)
-        B03 = self.scale_band(tiff.imread(f"{self.data_path.as_posix()}/{filepath}/B03.tif"), percentile=percentile)
-        B04 = self.scale_band(tiff.imread(f"{self.data_path.as_posix()}/{filepath}/B04.tif"), percentile=percentile)
-        B07 = self.scale_band(tiff.imread(f"{self.data_path.as_posix()}/{filepath}/B07.tif"), percentile=percentile)
-        B08 = self.scale_band(tiff.imread(f"{self.data_path.as_posix()}/{filepath}/B08.tif"), percentile=percentile)
+        B04 = self.downsample(self.scale_band(tiff.imread(f"{self.data_path.as_posix()}/{filepath}/B04.tif"), percentile=percentile), scale_factor)
+        B07 = self.downsample(self.scale_band(tiff.imread(f"{self.data_path.as_posix()}/{filepath}/B07.tif"), percentile=percentile), scale_factor)
+        B08 = self.downsample(self.scale_band(tiff.imread(f"{self.data_path.as_posix()}/{filepath}/B08.tif"), percentile=percentile), scale_factor)
 
-        B11 = cv2.resize(tiff.imread(f"{self.data_path.as_posix()}/{filepath}/B11.tif"), None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
-        B12 = cv2.resize(tiff.imread(f"{self.data_path.as_posix()}/{filepath}/B12.tif"), None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
-        B11 = self.scale_band(B11, percentile=percentile)
-        B12 = self.scale_band(B12, percentile=percentile)
-
-        # Load and colorize the mask
-        mask = tiff.imread(f"{self.data_path.as_posix()}/{maskpath}/mask.tif")
-        mask = self.colorize_mask(mask)
-
-        # Calculate indices
+        # Calculate NDVI and NBR indices
         NDVI = (B08 - B04) / (B08 + B04)
-        NDBI = (B11 - B08) / (B11 + B08)
-        NDWI = (B08 - B12) / (B08 + B12)
-
-        RGB = np.stack([B04, B03, B02], axis=-1)
-        B07_rescaled = cv2.resize(B07, (B04.shape[1], B04.shape[0]), interpolation=cv2.INTER_CUBIC)
-        NBR = (B08 - B07_rescaled) / (B08 + B07_rescaled)
-        false_color = np.stack([B08, B04, B03], axis=-1)
+        B07_upsampled = self.upsample(B07, B08.shape)
+        NBR = (B08 - B07_upsampled) / (B08 + B07_upsampled)
 
         # Return as dictionary
         return {
-            "NBR": NBR,
             "NDVI": NDVI,
-            "NDBI": NDBI,
-            "NDWI": NDWI,
-            "RGB": RGB,
-            "False Color": false_color,
-            "Mask": mask
+            "NBR": NBR
         }
-
