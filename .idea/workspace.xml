@@ -5,13 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7130a5a8-f14a-4e9a-ae8c-d2aaf3afffb5" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/data_csv/data.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data_csv/data.csv" beforeDir="false" afterPath="$PROJECT_DIR$/data_csv/data.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mine_seg_sat/dataset.py" beforeDir="false" afterPath="$PROJECT_DIR$/mine_seg_sat/dataset.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mine_seg_sat/image_process.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/mine_seg_sat/image_process.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mine_seg_sat/image_process_pipeline.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/mine_seg_sat/image_process_pipeline.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/download.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/download.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/prepare_dataset/dataset_splits.csv" beforeDir="false" afterPath="$PROJECT_DIR$/prepare_dataset/dataset_splits.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mine_seg_sat/models/random_forest.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/mine_seg_sat/models/random_forest.ipynb" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -46,7 +44,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false",
     "git-widget-placeholder": "xm-algo",
-    "last_opened_file_path": "/Users/lilllmeng/PycharmProjects/Capstone/prepare_dataset",
+    "last_opened_file_path": "/Users/lilllmeng/PycharmProjects/Capstone/mine_seg_sat",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -58,6 +56,7 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/mine_seg_sat" />
       <recent name="$PROJECT_DIR$/prepare_dataset" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
@@ -90,6 +89,7 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.organize_download_images" />
         <item itemvalue="Python.organize_download_images" />
       </list>
     </recent_temporary>
@@ -138,6 +138,9 @@
       <workItem from="1698692021757" duration="102000" />
       <workItem from="1698692126786" duration="10000" />
       <workItem from="1698692164735" duration="1699000" />
+      <workItem from="1699398531299" duration="1036000" />
+      <workItem from="1699399583506" duration="134000" />
+      <workItem from="1699399751925" duration="798000" />
     </task>
     <servers />
   </component>

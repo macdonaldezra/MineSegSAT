@@ -476,6 +476,91 @@ class MineSATDataset(torch.utils.data.Dataset):
             }
         )
 
+    def get_transformed_images(self, index: int, percentile: int = 95):
+        """
+        Generate Sentinel-2 images from the given filepath. The returned images are as follows:
+
+        NDVI: Normalized Difference Vegetation Index
+        NDBI: Normalized Difference Built-up Index
+        NDWI: Normalized Difference Water Index
+        False Color: B08, B04, B03
+        Mask: The class labels for each pixel
+        """
+        # Unpack the bands
+        filepath = self.filepaths[index]
+        maskpath = self.maskpaths[index]
+        B02 = self.scale_band(
+            tiff.imread(f"{self.data_path.as_posix()}/{filepath}/B02.tif"),
+            percentile=percentile,
+        )
+        B03 = self.scale_band(
+            tiff.imread(f"{self.data_path.as_posix()}/{filepath}/B03.tif"),
+            percentile=percentile,
+        )
+        B04 = self.scale_band(
+            tiff.imread(f"{self.data_path.as_posix()}/{filepath}/B04.tif"),
+            percentile=percentile,
+        )
+        B07 = self.scale_band(
+            tiff.imread(f"{self.data_path.as_posix()}/{filepath}/B07.tif"),
+            percentile=percentile,
+        )
+        B08 = self.scale_band(
+            tiff.imread(f"{self.data_path.as_posix()}/{filepath}/B08.tif"),
+            percentile=percentile,
+        )
+
+        B11 = cv2.resize(
+            tiff.imread(f"{self.data_path.as_posix()}/{filepath}/B11.tif"),
+            None,
+            fx=2,
+            fy=2,
+            interpolation=cv2.INTER_CUBIC,
+        )
+        B12 = cv2.resize(
+            tiff.imread(f"{self.data_path.as_posix()}/{filepath}/B12.tif"),
+            None,
+            fx=2,
+            fy=2,
+            interpolation=cv2.INTER_CUBIC,
+        )
+        B11 = self.scale_band(B11, percentile=percentile)
+        B12 = self.scale_band(B12, percentile=percentile)
+
+        mask = tiff.imread(f"{self.data_path.as_posix()}/{maskpath}/mask.tif")
+        mask = self.colorize_mask(mask)
+
+        # Calculate NDVI (Normalized Difference Vegetation Index)
+        NDVI = (B08 - B04) / (B08 + B04)
+
+        # Calculate NDBI (Normalized Difference Built-Up Index)
+        NDBI = (B11 - B08) / (B11 + B08)
+
+        # Calculate NDWI (Normalized Difference Water Index)
+        NDWI = (B08 - B12) / (B08 + B12)
+
+        # Create a color image using RGB bands
+        RGB = np.stack([B04, B03, B02], axis=-1)
+
+        # Upscale B07 to match the resolution of B04
+        B07_rescaled = cv2.resize(
+            B07, (B04.shape[1], B04.shape[0]), interpolation=cv2.INTER_CUBIC)
+
+        # Now compute NBR
+        NBR = (B08 - B07_rescaled) / (B08 + B07_rescaled)
+        # Create a false-color composite image
+        false_color = np.stack([B08, B04, B03], axis=-1)
+
+        # Instead of displaying the images, we return them in a dictionary
+        return {
+            "NBR": NBR,
+            "NDVI": NDVI,
+            "NDBI": NDBI,
+            "NDWI": NDWI,
+            "RGB": RGB,
+            "False Color": false_color,
+            # "Mask": mask,  # Optional: return the mask if needed
+        }
 
     def get_numerical_values(self, index: int, percentile: int = 95):
         """
