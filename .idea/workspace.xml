@@ -6,10 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="7130a5a8-f14a-4e9a-ae8c-d2aaf3afffb5" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_csv/data.csv" beforeDir="false" afterPath="$PROJECT_DIR$/data_csv/data.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mine_seg_sat/dataset.py" beforeDir="false" afterPath="$PROJECT_DIR$/mine_seg_sat/dataset.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mine_seg_sat/image_process.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/mine_seg_sat/image_process.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mine_seg_sat/models/random_forest.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/mine_seg_sat/models/random_forest.ipynb" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -38,22 +36,22 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "xm-algo",
-    "last_opened_file_path": "/Users/lilllmeng/PycharmProjects/Capstone/mine_seg_sat",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;xm-algo&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/lilllmeng/PycharmProjects/Capstone/mine_seg_sat&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/mine_seg_sat" />
@@ -140,7 +138,21 @@
       <workItem from="1698692164735" duration="1699000" />
       <workItem from="1699398531299" duration="1036000" />
       <workItem from="1699399583506" duration="134000" />
-      <workItem from="1699399751925" duration="798000" />
+      <workItem from="1699399751925" duration="831000" />
+      <workItem from="1699400595470" duration="87000" />
+      <workItem from="1699400695340" duration="381000" />
+      <workItem from="1699401084367" duration="543000" />
+      <workItem from="1699401633929" duration="268000" />
+      <workItem from="1699401908383" duration="19000" />
+      <workItem from="1699401967657" duration="537000" />
+      <workItem from="1699402517604" duration="305000" />
+      <workItem from="1699402845244" duration="849000" />
+      <workItem from="1699403700481" duration="43000" />
+      <workItem from="1699403778686" duration="234000" />
+      <workItem from="1699404020269" duration="834000" />
+      <workItem from="1699404862569" duration="122000" />
+      <workItem from="1699405401542" duration="509000" />
+      <workItem from="1699405920298" duration="962000" />
     </task>
     <servers />
   </component>
