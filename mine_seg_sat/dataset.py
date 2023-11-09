@@ -477,29 +477,124 @@ class MineSATDataset(torch.utils.data.Dataset):
             }
         )
 
+    def safe_divide(self, numerator, denominator):
+        """Safely divide two arrays and handle division by zero."""
+        with np.errstate(divide='ignore', invalid='ignore'):
+            result = numerator / denominator
+            result[~np.isfinite(result)] = 0  # Replace -inf, inf, NaN with 0
+        return result
+
+    def get_images(self, index: int, percentile: int = 95):
+        """
+        Generate Sentinel-2 images from the given filepath. The returned images are as follows:
+
+        NDVI: Normalized Difference Vegetation Index
+        NDBI: Normalized Difference Built-up Index
+        NDWI: Normalized Difference Water Index
+        False Color: B08, B04, B03
+        Mask: The class labels for each pixel
+        """
+        # Unpack the bands
+        image_dict = {}  # Initialize an empty dictionary to store images
+
+        try:
+            filepath = self.filepaths[index]
+            maskpath = self.maskpaths[index]
+            B02 = self.scale_band(
+                tiff.imread(f"{self.data_path.as_posix()}/{filepath}/B02.tif"),
+                percentile=percentile,
+            )
+            B03 = self.scale_band(
+                tiff.imread(f"{self.data_path.as_posix()}/{filepath}/B03.tif"),
+                percentile=percentile,
+            )
+            B04 = self.scale_band(
+                tiff.imread(f"{self.data_path.as_posix()}/{filepath}/B04.tif"),
+                percentile=percentile,
+            )
+            B07 = self.scale_band(
+                tiff.imread(f"{self.data_path.as_posix()}/{filepath}/B07.tif"),
+                percentile=percentile,
+            )
+            B08 = self.scale_band(
+                tiff.imread(f"{self.data_path.as_posix()}/{filepath}/B08.tif"),
+                percentile=percentile,
+            )
+
+            B11 = cv2.resize(
+                tiff.imread(f"{self.data_path.as_posix()}/{filepath}/B11.tif"),
+                None,
+                fx=2,
+                fy=2,
+                interpolation=cv2.INTER_CUBIC,
+            )
+            B12 = cv2.resize(
+                tiff.imread(f"{self.data_path.as_posix()}/{filepath}/B12.tif"),
+                None,
+                fx=2,
+                fy=2,
+                interpolation=cv2.INTER_CUBIC,
+            )
+            B11 = self.scale_band(B11, percentile=percentile)
+            B12 = self.scale_band(B12, percentile=percentile)
+
+            mask = tiff.imread(
+                f"{self.data_path.as_posix()}/{maskpath}/mask.tif")
+            mask = self.colorize_mask(mask)
+
+            # Calculate NDVI (Normalized Difference Vegetation Index)
+            NDVI = self.safe_divide(B08 - B04, B08 + B04)
+
+            # Create a color image using RGB bands
+            RGB = np.stack([B04, B03, B02], axis=-1)
+
+            # Upscale B07 to match the resolution of B04
+            B07_rescaled = cv2.resize(
+                B07, (B04.shape[1], B04.shape[0]), interpolation=cv2.INTER_CUBIC)
+
+            # Now compute NBR
+            NBR = self.safe_divide(B08 - B07_rescaled, B08 + B07_rescaled)
+            # Create a false-color composite image
+            false_color = np.stack([B08, B04, B03], axis=-1)
+
+            # Add to the dictionary
+            image_dict["NBR"] = NBR
+            image_dict["NDVI"] = NDVI
+            image_dict["RGB"] = RGB
+
+        except FileNotFoundError as e:
+            print(f"File not found: {e}")
+            # Additional error handling can be done here if needed
+        return image_dict
 
     def downsample(self, image, scale_factor):
 
         if not (0 < scale_factor < 1):
             raise ValueError("Scale factor must be between 0 and 1.")
-        dimensions = (int(image.shape[1] * scale_factor), int(image.shape[0] * scale_factor))
-        downsampled_image = cv2.resize(image, dimensions, interpolation=cv2.INTER_AREA)
+        dimensions = (int(image.shape[1] * scale_factor),
+                      int(image.shape[0] * scale_factor))
+        downsampled_image = cv2.resize(
+            image, dimensions, interpolation=cv2.INTER_AREA)
         return downsampled_image
 
     def upsample(self, image, target_shape):
-        upsampled_image = cv2.resize(image, (target_shape[1], target_shape[0]), interpolation=cv2.INTER_CUBIC)
+        upsampled_image = cv2.resize(
+            image, (target_shape[1], target_shape[0]), interpolation=cv2.INTER_CUBIC)
         return upsampled_image
 
     def get_numerical_values(self, index: int, percentile: int = 95, scale_factor: float = 0.05):
-    # Assuming that all the necessary functions and variables are defined elsewhere in the class
+        # Assuming that all the necessary functions and variables are defined elsewhere in the class
         try:
             filepath = self.filepaths[index]
             print(f"Filepath: {filepath}")  # 打印文件路径以供检查
 
             # Load and scale the bands
-            B04 = self.downsample(self.scale_band(tiff.imread(f"{self.data_path.as_posix()}/{filepath}/B04.tif"), percentile=percentile), scale_factor)
-            B07 = self.downsample(self.scale_band(tiff.imread(f"{self.data_path.as_posix()}/{filepath}/B07.tif"), percentile=percentile), scale_factor)
-            B08 = self.downsample(self.scale_band(tiff.imread(f"{self.data_path.as_posix()}/{filepath}/B08.tif"), percentile=percentile), scale_factor)
+            B04 = self.downsample(self.scale_band(tiff.imread(
+                f"{self.data_path.as_posix()}/{filepath}/B04.tif"), percentile=percentile), scale_factor)
+            B07 = self.downsample(self.scale_band(tiff.imread(
+                f"{self.data_path.as_posix()}/{filepath}/B07.tif"), percentile=percentile), scale_factor)
+            B08 = self.downsample(self.scale_band(tiff.imread(
+                f"{self.data_path.as_posix()}/{filepath}/B08.tif"), percentile=percentile), scale_factor)
 
             # Calculate NDVI and NBR indices
             NDVI = (B08 - B04) / (B08 + B04)
@@ -508,7 +603,6 @@ class MineSATDataset(torch.utils.data.Dataset):
 
             location_info = os.path.basename(filepath)  # 或者根据实际情况提取位置信息
             print(f"Location info: {location_info}")  # 打印位置信息以供检查
-
 
             # Return as dictionary
             return {
