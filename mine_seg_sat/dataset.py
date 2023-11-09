@@ -586,7 +586,7 @@ class MineSATDataset(torch.utils.data.Dataset):
         # Assuming that all the necessary functions and variables are defined elsewhere in the class
         try:
             filepath = self.filepaths[index]
-            print(f"Filepath: {filepath}")  # 打印文件路径以供检查
+            print(f"Filepath: {filepath}") 
 
             # Load and scale the bands
             B04 = self.downsample(self.scale_band(tiff.imread(
@@ -601,8 +601,8 @@ class MineSATDataset(torch.utils.data.Dataset):
             B07_upsampled = self.upsample(B07, B08.shape)
             NBR = (B08 - B07_upsampled) / (B08 + B07_upsampled)
 
-            location_info = os.path.basename(filepath)  # 或者根据实际情况提取位置信息
-            print(f"Location info: {location_info}")  # 打印位置信息以供检查
+            location_info = os.path.basename(filepath)
+            print(f"Location info: {location_info}")
 
             # Return as dictionary
             return {
@@ -612,5 +612,5 @@ class MineSATDataset(torch.utils.data.Dataset):
             }
 
         except Exception as e:
-            print(f"An error occurred: {e}")  # 打印异常信息
+            print(f"An error occurred: {e}")
             return {}
