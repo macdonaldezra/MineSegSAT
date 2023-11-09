@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 import tifffile as tiff
 import torch
+import os
 
 from mine_seg_sat.constants import (MAX_RESOLUTION, MID_RESOLUTION,
                                     MIN_RESOLUTION)
@@ -491,20 +492,31 @@ class MineSATDataset(torch.utils.data.Dataset):
 
     def get_numerical_values(self, index: int, percentile: int = 95, scale_factor: float = 0.05):
     # Assuming that all the necessary functions and variables are defined elsewhere in the class
-        filepath = self.filepaths[index]
+        try:
+            filepath = self.filepaths[index]
+            print(f"Filepath: {filepath}")  # 打印文件路径以供检查
 
-        # Load and scale the bands
-        B04 = self.downsample(self.scale_band(tiff.imread(f"{self.data_path.as_posix()}/{filepath}/B04.tif"), percentile=percentile), scale_factor)
-        B07 = self.downsample(self.scale_band(tiff.imread(f"{self.data_path.as_posix()}/{filepath}/B07.tif"), percentile=percentile), scale_factor)
-        B08 = self.downsample(self.scale_band(tiff.imread(f"{self.data_path.as_posix()}/{filepath}/B08.tif"), percentile=percentile), scale_factor)
+            # Load and scale the bands
+            B04 = self.downsample(self.scale_band(tiff.imread(f"{self.data_path.as_posix()}/{filepath}/B04.tif"), percentile=percentile), scale_factor)
+            B07 = self.downsample(self.scale_band(tiff.imread(f"{self.data_path.as_posix()}/{filepath}/B07.tif"), percentile=percentile), scale_factor)
+            B08 = self.downsample(self.scale_band(tiff.imread(f"{self.data_path.as_posix()}/{filepath}/B08.tif"), percentile=percentile), scale_factor)
 
-        # Calculate NDVI and NBR indices
-        NDVI = (B08 - B04) / (B08 + B04)
-        B07_upsampled = self.upsample(B07, B08.shape)
-        NBR = (B08 - B07_upsampled) / (B08 + B07_upsampled)
+            # Calculate NDVI and NBR indices
+            NDVI = (B08 - B04) / (B08 + B04)
+            B07_upsampled = self.upsample(B07, B08.shape)
+            NBR = (B08 - B07_upsampled) / (B08 + B07_upsampled)
 
-        # Return as dictionary
-        return {
-            "NDVI": NDVI,
-            "NBR": NBR
-        }
+            location_info = os.path.basename(filepath)  # 或者根据实际情况提取位置信息
+            print(f"Location info: {location_info}")  # 打印位置信息以供检查
+
+
+            # Return as dictionary
+            return {
+                "NDVI": NDVI,
+                "NBR": NBR,
+                "Location": location_info
+            }
+
+        except Exception as e:
+            print(f"An error occurred: {e}")  # 打印异常信息
+            return {}
