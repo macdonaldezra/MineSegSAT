@@ -1,6 +1,6 @@
 # MineSegSAT
 
-A repository containing a model designed for identifying environmentally impacted areas of mines.
+This repository is an implementation of [MineSegSAT](https://arxiv.org/abs/2311.01676), presented at [ECRS 2023](https://ecrs2023.sciforum.net/). MineSegSAT is a deep learning model that identifies environmentally impacted areas of mineral extraction sites using the [SegFormer](https://arxiv.org/abs/2105.15203) model architecture trained on Sentinel-2 data.
 
 ## Installation
 
