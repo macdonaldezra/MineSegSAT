@@ -74,7 +74,7 @@ class EfficientSelfAttention(torch.nn.Module):
             # Reshape to (batch_size, channels, height, width)
             x = hidden_states.permute(0, 2, 1).reshape(batch, c, height, width)
             # Apply sequence reduction
-            x = self.sr(x).reshape(batch, c, -1).permute(0, 2, 1)
+            x = self.sr(x).reshape(batch, c, -1).permute(0, 2, 1).contiguous()
             x = self.layer_norm(x)
             hidden_states = x
 
@@ -144,11 +144,11 @@ class OverlapPatchEmbedding(torch.nn.Module):
 
     def forward(self, x):
         x = self.proj(x)
-        _, _, height, width = x.shape
+        _, _, h, w = x.shape
         x = x.flatten(2).transpose(1, 2)
         x = self.norm(x)
 
-        return x, height, width
+        return x, h, w
 
 
 class MixedFeedForwardNetwork(torch.nn.Module):
@@ -171,10 +171,10 @@ class MixedFeedForwardNetwork(torch.nn.Module):
     def forward(self, x, height, width):
         x = self.mlp_in(x)
 
-        batch_size, _, num_channels = x.shape
-        x = x.transpose(1, 2).reshape(batch_size, num_channels, height, width)
+        b, _, c = x.shape
+        x = x.transpose(1, 2).reshape(b, c, height, width).contiguous()
         x = self.conv(x)
-        x = x.flatten(2).transpose(1, 2)
+        x = x.flatten(2).transpose(1, 2).contiguous()
         x = torch.nn.functional.gelu(x)
 
         x = self.dropout(x)
@@ -289,7 +289,7 @@ class SegformerEncoder(torch.nn.Module):
         self.layer_norm = torch.nn.ModuleList(layer_norm)
 
     def forward(self, inputs, return_attn: bool = False):
-        batch_size = inputs.shape[0]
+        b = inputs.shape[0]
         hidden_states = inputs
         outputs = []
         attn_outputs = []
@@ -323,8 +323,8 @@ class SegformerEncoder(torch.nn.Module):
 
             # 4. Reshape back to (b, c, h, w)
             hidden_states = hidden_states.reshape(
-                batch_size, height, width, -1
-            ).permute(0, 3, 1, 2)
+                b, height, width, -1
+            ).permute(0, 3, 1, 2).contiguous()
 
             if return_attn:
                 for k, v in attn_output.items():

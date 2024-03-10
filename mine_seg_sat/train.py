@@ -53,7 +53,8 @@ def main(rank: int, world_size: int, config: TrainingConfig) -> None:
         config_to_yaml(config, config.output_path / "config.yaml")
 
     model = get_model(config, device)
-    optimizer = torch.optim.AdamW(model.parameters(), lr=config.learning_rate)
+    ddp_model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[rank])
+    optimizer = torch.optim.AdamW(ddp_model.parameters(), lr=config.learning_rate)
 
     criterion = get_loss(config, rank)
     scheduler = get_lr_scheduler(optimizer, config, dataset_len)
@@ -61,7 +62,7 @@ def main(rank: int, world_size: int, config: TrainingConfig) -> None:
     if config.weight_filepath:
         print(f"Loading pretrained weights from {config.weight_filepath.as_posix()}")
         checkpoint = torch.load(config.weight_filepath.as_posix())
-        model.load_state_dict(checkpoint["model_state_dict"], strict=False)
+        ddp_model.load_state_dict(checkpoint["model_state_dict"], strict=False)
         optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
 
     if config.num_classes == 1:
@@ -70,7 +71,7 @@ def main(rank: int, world_size: int, config: TrainingConfig) -> None:
             dataloaders=dataloaders,
             rank=rank,
             optimizer=optimizer,
-            model=model,
+            model=ddp_model,
             criterion=criterion,
             lr_scheduler=scheduler,
             writer=writer,
