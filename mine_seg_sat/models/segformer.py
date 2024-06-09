@@ -322,9 +322,11 @@ class SegformerEncoder(torch.nn.Module):
             hidden_states = norm(hidden_states)
 
             # 4. Reshape back to (b, c, h, w)
-            hidden_states = hidden_states.reshape(
-                b, height, width, -1
-            ).permute(0, 3, 1, 2).contiguous()
+            hidden_states = (
+                hidden_states.reshape(b, height, width, -1)
+                .permute(0, 3, 1, 2)
+                .contiguous()
+            )
 
             if return_attn:
                 for k, v in attn_output.items():
