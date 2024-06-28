@@ -9,11 +9,11 @@ import pandas as pd
 import tifffile as tiff
 import torch
 
-from mine_seg_sat.constants import MAX_RESOLUTION, MID_RESOLUTION, MIN_RESOLUTION
+from mine_seg_sat.constants import (MAX_RESOLUTION, MID_RESOLUTION,
+                                    MIN_RESOLUTION)
 
 
 class MineSATDataset(torch.utils.data.Dataset):
-
     """
     Dataset for collection of binary masks and Sentinel-2 tiles containing mines.
     """

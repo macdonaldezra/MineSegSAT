@@ -13,3 +13,21 @@ poetry install
 ```
 
 Data that accompanies this repository can be downloaded from [here](https://drive.google.com/drive/folders/1FMruAwQeOB0T8BunxzBmjQI5R5uj6wAp?usp=sharing). A sample configuration file that could be used for training a model on the provided dataset can be found in the `configs` directory.
+
+### Citation
+
+If you found this work useful in a published work, please consider citing.
+
+```bibtex
+@article{macdonald_minesegsat_2023,
+	title = {{MineSegSAT}: {An} automated system to evaluate mining disturbed area extents from {Sentinel}-2 imagery},
+	shorttitle = {{MineSegSAT}},
+	url = {http://arxiv.org/abs/2311.01676},
+	doi = {10.48550/arXiv.2311.01676},
+	publisher = {arXiv},
+	author = {MacDonald, Ezra and Jacoby, Derek and Coady, Yvonne},
+	month = nov,
+	year = {2023},
+	journal = {arXiv preprint arXiv:2311.01676},
+}
+```

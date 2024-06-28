@@ -1,10 +1,8 @@
 Bootstrap: docker
 From: nvidia/cuda:11.7.1-cudnn8-devel-ubuntu22.04
 
-
 # Environment variables that will be set during runtime
 %environment
-
     export LANG=C.UTF-8
     # May need to specify relevant time zone for your region depending on whether or not
     # Singularity detects your host's time zone correctly
@@ -16,7 +14,6 @@ From: nvidia/cuda:11.7.1-cudnn8-devel-ubuntu22.04
 
 # Copy over files from host to container
 %files
-
     mine_seg_sat /code/
     poetry.lock /code/
     pyproject.toml /code/
@@ -38,7 +35,7 @@ From: nvidia/cuda:11.7.1-cudnn8-devel-ubuntu22.04
     add-apt-repository ppa:deadsnakes/ppa
     add-apt-repository ppa:ubuntugis/ppa
     apt-get update -y -qq
-    apt-get install -y -qq gdal-bin=3.4.3+dfsg-1~jammy0
+    apt-get install -y -qq gdal-bin
 
     # Install Python 3.9, dependencies for OpenCV, and GDAL
     DEBIAN_FRONTEND=noninteractive apt-get install -y -qq python3.9 \
@@ -68,7 +65,6 @@ From: nvidia/cuda:11.7.1-cudnn8-devel-ubuntu22.04
     poetry install --no-interaction --no-ansi
 
 %runscript
-
     # Executed commands and then follow it with a command like the following
     # python -m mine_seg_sat.train
     cd /code

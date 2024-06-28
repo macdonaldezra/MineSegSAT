@@ -303,7 +303,6 @@ class SegformerEncoder(torch.nn.Module):
 
             # 1. Obtain patch embeddings
             hidden_states, height, width = embedding(hidden_states)
-            #
             if return_attn:
                 stage_outputs["patch_embedding_height"] = height
                 stage_outputs["patch_embedding_width"] = width
@@ -411,21 +410,24 @@ class SegFormer(torch.nn.Module):
         self,
         in_channels: int,
         num_classes: int,
-        hidden_state_channels: tuple[int] = (64, 128, 320, 512),
-        transformer_depth: tuple[int] = (3, 4, 18, 3),
+        hidden_state_channels: tuple[int] = (64, 128, 256, 512),
+        num_heads: tuple[int] = (1, 2, 4, 8),
+        patch_sizes: tuple[int] = (3, 3, 3, 3),
+        strides: tuple[int] = (2, 2, 2, 2),
+        sr_ratios: tuple[int] = (4, 2, 1, 1),
+        transformer_depth: tuple[int] = (3, 3, 8, 3),
         dropout_p: float = 0.1,
         dropout_path_p: float = 0.15,
-        return_logits: bool = True,
     ) -> None:
         super().__init__()
         self.encoder = SegformerEncoder(
             in_channels=in_channels,
             embed_dims=hidden_state_channels,
-            num_heads=(1, 2, 5, 8),
-            patch_sizes=(7, 3, 3, 3),
-            strides=(4, 2, 2, 2),
+            num_heads=num_heads,
+            patch_sizes=patch_sizes,
+            strides=strides,
             depths=transformer_depth,
-            sr_ratios=(8, 4, 2, 1),
+            sr_ratios=sr_ratios,
             dropout_p=dropout_p,
             dropout_path_p=dropout_path_p,
         )
@@ -435,8 +437,6 @@ class SegFormer(torch.nn.Module):
             embed_dim=256,
             dropout_p=dropout_p,
         )
-        self.return_logits = return_logits
-
         self.apply(self._init_weights)
 
     def _init_weights(self, m):
@@ -457,8 +457,6 @@ class SegFormer(torch.nn.Module):
         x = torch.nn.functional.interpolate(
             x, size=image_dim, mode="bilinear", align_corners=False
         )
-        if not self.return_logits:
-            x = torch.nn.functional.softmax(x, dim=1)
 
         return x
 

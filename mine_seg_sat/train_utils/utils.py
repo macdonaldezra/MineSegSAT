@@ -3,7 +3,6 @@ from pathlib import Path
 
 import pandas as pd
 import torch
-from segmentation_models_pytorch import Unet, UnetPlusPlus
 from segmentation_models_pytorch.losses import (
     DiceLoss,
     FocalLoss,
@@ -18,6 +17,12 @@ from torchmetrics import (
     MetricCollection,
     Precision,
     Recall,
+)
+from torchvision.models.segmentation import (
+    deeplabv3_resnet50,
+    deeplabv3_resnet101,
+    fcn_resnet50,
+    fcn_resnet101,
 )
 
 from mine_seg_sat.config import TrainingConfig
@@ -70,7 +75,7 @@ def get_lr_scheduler(
         raise ValueError(f"Learning rate not found for {config.lr_scheduler}.")
 
 
-def get_loss(config: TrainingConfig, rank: T.Optional[str] = None) -> torch.nn.Module:
+def get_loss(config: TrainingConfig) -> torch.nn.Module:
     """
     Retrieve a loss function for the given configuration.
     """
@@ -102,28 +107,38 @@ def get_model(config: TrainingConfig, device: torch.device) -> torch.nn.Module:
     """
     Get a model for training.
     """
-    if config.model == "unet":
-        model = Unet(
-            encoder_name=config.encoder,
-            decoder_attention_type="scse",
-            encoder_weights=None,  # can't use weights with 3-channel input...
-            classes=config.num_classes,
-            in_channels=config.in_channels,
+    if config.model_name == "fcn_resnet50":
+        model = fcn_resnet50(num_classes=config.num_classes, weights_backbone=None)
+        model.backbone.conv1 = torch.nn.Conv2d(
+            config.in_channels, 64, kernel_size=7, stride=2, padding=3, bias=False
         )
-    elif config.model == "unetplusplus":
-        model = UnetPlusPlus(
-            encoder_name=config.encoder,
-            decoder_attention_type="scse",
-            encoder_weights=None,
-            classes=config.num_classes,
-            in_channels=config.in_channels,
+    elif config.model_name == "fcn_resnet101":
+        model = fcn_resnet101(num_classes=config.num_classes, weights_backbone=None)
+        model.backbone.conv1 = torch.nn.Conv2d(
+            config.in_channels, 64, kernel_size=7, stride=2, padding=3, bias=False
         )
-    elif config.model == "segformer":
+    elif config.model_name == "deeplabv3_resnet50":
+        model = deeplabv3_resnet50(
+            num_classes=config.num_classes, weights_backbone=None
+        )
+        model.backbone.conv1 = torch.nn.Conv2d(
+            config.in_channels, 64, kernel_size=7, stride=2, padding=3, bias=False
+        )
+    elif config.model_name == "deeplabv3_resnet101":
+        model = deeplabv3_resnet101(
+            num_classes=config.num_classes, weights_backbone=None
+        )
+        model.backbone.conv1 = torch.nn.Conv2d(
+            config.in_channels, 64, kernel_size=7, stride=2, padding=3, bias=False
+        )
+    elif config.model_name == "segformer":
         model = SegFormer(
-            in_channels=config.in_channels, num_classes=config.num_classes
+            in_channels=config.in_channels,
+            num_classes=config.num_classes,
+            **config.model_kwargs if config.model_kwargs else {},
         )
     else:
-        raise ValueError(f"Model not found for {config.model}.")
+        raise ValueError(f"Model not found for {config.model_name}.")
 
     return model.to(device)
 

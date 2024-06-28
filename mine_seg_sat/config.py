@@ -40,32 +40,27 @@ class TrainingConfig(BaseModel):
     epochs: int
     lr_scheduler: str
     learning_rate: float
-    max_learning_rate: Optional[float] = 0.05
-    min_learning_rate: Optional[float] = 1e-5
-    learning_rate_weight_decay: float
+    max_learning_rate: Optional[float]
+    min_learning_rate: Optional[float]
+    learning_rate_weight_decay: Optional[float] = None
     batch_size: int
-    save_frequency: int
     class_weights: Optional[List[float]] = None
-    weight_filepath: Union[None, Path] = None
+    model_filepath: Union[None, Path] = None
     ignore_index: Optional[int] = None
-    model: str
+    model_name: str = Field(..., env="MODEL_NAME")
+    model_kwargs: Optional[Dict[str, Any]] = Field(None, env="MODEL_KWARGS")
     in_channels: int = 12
     encoder: Optional[str] = "resnet50"
     num_dataloader_workers: int
     profile: bool = False
     has_aux_classifier: bool = False
     loss: str
-    dataset: str = "eusegsat"
+    dataset: str = "minesegsat"
     comment: Optional[str] = None
     included_classes: Optional[List[int]] = None
 
     data_path: Path = Field(DATA_PATH, env="DATA_PATH")
     output_path: Path = Field(..., env="OUTPUT_PATH")
-
-    # AWS credentials
-    aws_access_key_id: str = Field(None, env="AWS_ACCESS_KEY_ID")
-    aws_secret_access_key: str = Field(None, env="AWS_SECRET_ACCESS_KEY")
-    aws_s3_bucket: str = Field(None, env="AWS_S3_BUCKET")
 
 
 def parse_yaml(data: Union[IO, bytes]) -> Union[None, Dict[str, Any]]:
